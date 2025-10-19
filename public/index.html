@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>WS4 Home</title>
+  </head>
+  <body
+    style="
+      font-family:
+        system-ui,
+        Segoe UI,
+        sans-serif;
+      line-height: 1.6;
+      padding: 16px;
+    "
+  >
+    <h1>WS4: Express basics</h1>
+    <p>Try routes: <a href="/api/time">/api/time</a> and use the search form.</p>
+
+    <h2>Search Products or Repositories</h2>
+    <form action="/search" method="post" style="display: grid; gap: 8px; max-width: 520px">
+      <input type="text" name="q" placeholder="e.g. phone, laptop, shoes, node, react" required />
+
+      <div>
+        <label style="margin-right: 12px">
+          <input type="radio" name="src" value="demo" checked /> Demo (DemoJSON)
+        </label>
+        <label> <input type="radio" name="src" value="github" /> GitHub (may be rate limited) </label>
+      </div>
+
+      <button type="submit">Search</button>
+    </form>
+
+    <div id="result" style="margin-top: 14px"></div>
+
+    <script>
+      // Read #q and #src from the hash, for example #q=phone&src=demo
+      const paramsFromHash = () => {
+        const h = new URLSearchParams(location.hash.slice(1));
+        return { q: h.get("q"), src: h.get("src") || "demo" };
+      };
+
+      const renderJSON = (obj) => {
+        document.getElementById("result").innerHTML =
+          "<pre style='border:1px solid #ddd;padding:12px;border-radius:8px;overflow:auto'>" +
+          JSON.stringify(obj, null, 2) +
+          "</pre>";
+      };
+
+      const runSearchIfAny = async () => {
+        const { q, src } = paramsFromHash();
+        if (!q) return;
+        try {
+          const r = await fetch("/api/search?q=" + encodeURIComponent(q) + "&src=" + encodeURIComponent(src));
+          const data = await r.json();
+          renderJSON(data);
+        } catch (e) {
+          renderJSON({ error: String(e) });
+        }
+      };
+
+      window.addEventListener("hashchange", runSearchIfAny);
+      runSearchIfAny();
+    </script>
+  </body>
+</html>
